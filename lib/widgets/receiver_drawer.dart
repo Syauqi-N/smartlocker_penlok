@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/screens/auth/landing_screen.dart';
-import 'package:smartlocker/screens/owner/owner_dashboard_screen.dart';
-import 'package:smartlocker/screens/owner/owner_notifications_screen.dart';
 import 'package:smartlocker/screens/owner/package_center_screen.dart';
-import 'package:smartlocker/screens/owner/payment_verification_screen.dart';
-import 'package:smartlocker/screens/owner/product_management_screen.dart';
-import 'package:smartlocker/screens/owner/sales_history_screen.dart';
+import 'package:smartlocker/screens/owner/package_history_screen.dart';
+import 'package:smartlocker/screens/owner/receiver_dashboard_screen.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
-class OwnerDrawer extends StatelessWidget {
-  const OwnerDrawer({super.key});
+class ReceiverDrawer extends StatelessWidget {
+  const ReceiverDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +19,7 @@ class OwnerDrawer extends StatelessWidget {
               color: AppColors.primary,
             ),
             child: Text(
-              'Owner Menu',
+              'Receiver Menu',
               style: TextStyle(
                 color: AppColors.black,
                 fontSize: 24,
@@ -33,17 +30,7 @@ class OwnerDrawer extends StatelessWidget {
           _buildDrawerItem(
             icon: Icons.dashboard,
             text: 'Dashboard',
-            onTap: () => _navigateTo(context, const OwnerDashboardScreen()),
-          ),
-          _buildDrawerItem(
-            icon: Icons.inventory_2,
-            text: 'Product Management',
-            onTap: () => _navigateTo(context, const ProductManagementScreen()),
-          ),
-          _buildDrawerItem(
-            icon: Icons.verified_user,
-            text: 'Payment Verification',
-            onTap: () => _navigateTo(context, const PaymentVerificationScreen()),
+            onTap: () => _navigateTo(context, const ReceiverDashboardScreen()),
           ),
           _buildDrawerItem(
             icon: Icons.inventory,
@@ -52,13 +39,8 @@ class OwnerDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             icon: Icons.history,
-            text: 'Sales History',
-            onTap: () => _navigateTo(context, const SalesHistoryScreen()),
-          ),
-          _buildDrawerItem(
-            icon: Icons.notifications,
-            text: 'Order Notifications',
-            onTap: () => _navigateTo(context, const OwnerNotificationsScreen()),
+            text: 'Package History',
+            onTap: () => _navigateTo(context, const PackageHistoryScreen()),
           ),
           const Divider(),
           _buildDrawerItem(

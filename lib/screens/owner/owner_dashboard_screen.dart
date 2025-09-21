@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/purchase.dart';
 import 'package:smartlocker/services/purchase_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
-import 'package:smartlocker/widgets/owner_drawer.dart';
+import 'package:smartlocker/widgets/seller_drawer.dart';
 import 'package:smartlocker/widgets/placeholder_chart.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
@@ -32,7 +32,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       appBar: AppBar(
         title: const Text('Dashboard'),
       ),
-      drawer: const OwnerDrawer(),
+      drawer: const SellerDrawer(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(

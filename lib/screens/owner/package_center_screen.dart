@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
+import 'package:smartlocker/screens/owner/package_detail_screen.dart';
+import 'package:smartlocker/screens/owner/package_input_screen.dart';
 import 'package:smartlocker/services/package_service.dart';
-
-import 'package:smartlocker/widgets/owner_drawer.dart';
+import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageCenterScreen extends StatefulWidget {
   const PackageCenterScreen({super.key});
@@ -13,10 +14,6 @@ class PackageCenterScreen extends StatefulWidget {
 
 class _PackageCenterScreenState extends State<PackageCenterScreen>
     with SingleTickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
-  final _trackingNumberController = TextEditingController();
-  final _packageNameController = TextEditingController();
-
   final PackageService _packageService = PackageService();
   late TabController _tabController;
 
@@ -29,24 +26,30 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _trackingNumberController.dispose();
-    _packageNameController.dispose();
     super.dispose();
   }
 
-  void _addPackage() {
-    if (_formKey.currentState!.validate()) {
-      _packageService.addPackage(
-        _trackingNumberController.text,
-        _packageNameController.text,
-      );
-      _trackingNumberController.clear();
-      _packageNameController.clear();
-      setState(() {}); // Refresh the lists
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Package added successfully!')),
-      );
+  void _refreshPackages() {
+    setState(() {});
+  }
+
+  void _navigateToAddPackage() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PackageInputScreen()),
+    );
+    if (result == true) {
+      _refreshPackages();
     }
+  }
+
+  void _navigateToPackageDetail(Package package) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageDetailScreen(package: package),
+      ),
+    );
   }
 
   @override
@@ -62,7 +65,7 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
           ],
         ),
       ),
-      drawer: const OwnerDrawer(),
+      drawer: const ReceiverDrawer(),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -71,7 +74,7 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddPackageDialog(),
+        onPressed: _navigateToAddPackage,
         child: const Icon(Icons.add),
       ),
     );
@@ -89,7 +92,17 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: ListTile(
             title: Text(package.packageName),
-            subtitle: Text('Resi: ${package.trackingNumber}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Resi: ${package.trackingNumber}'),
+                if (package.courier != null && package.courier!.isNotEmpty)
+                  Text('Courier: ${package.courier}'),
+                if (package.orderDate != null)
+                  Text(
+                      'Order Date: ${package.orderDate!.day}/${package.orderDate!.month}/${package.orderDate!.year}'),
+              ],
+            ),
             trailing: Text(
               package.status.toString().split('.').last,
               style: TextStyle(
@@ -100,60 +113,8 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
                         : Colors.green,
               ),
             ),
+            onTap: () => _navigateToPackageDetail(package),
           ),
-        );
-      },
-    );
-  }
-
-  void _showAddPackageDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add New Package'),
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _trackingNumberController,
-                  decoration: const InputDecoration(labelText: 'Tracking Number (Resi)'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a tracking number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _packageNameController,
-                  decoration: const InputDecoration(labelText: 'Package Name'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a package name';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _addPackage();
-                Navigator.pop(context);
-              },
-              child: const Text('Add Package'),
-            ),
-          ],
         );
       },
     );

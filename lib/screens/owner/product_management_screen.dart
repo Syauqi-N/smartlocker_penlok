@@ -4,7 +4,7 @@ import 'package:smartlocker/screens/owner/add_product_screen.dart';
 import 'package:smartlocker/screens/owner/edit_product_screen.dart';
 import 'package:smartlocker/services/product_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
-import 'package:smartlocker/widgets/owner_drawer.dart';
+import 'package:smartlocker/widgets/seller_drawer.dart';
 
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
@@ -82,7 +82,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       appBar: AppBar(
         title: const Text('Product Management'),
       ),
-      drawer: const OwnerDrawer(),
+      drawer: const SellerDrawer(),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/utils/app_colors.dart';
-import 'package:smartlocker/widgets/owner_drawer.dart';
+import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class ReceiptRegistrationScreen extends StatelessWidget {
   const ReceiptRegistrationScreen({super.key});
@@ -11,7 +11,7 @@ class ReceiptRegistrationScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Receipt Registration'),
       ),
-      drawer: const OwnerDrawer(),
+      drawer: const ReceiverDrawer(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Card(

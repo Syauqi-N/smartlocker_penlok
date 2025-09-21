@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smartlocker/widgets/owner_drawer.dart';
+import 'package:smartlocker/widgets/seller_drawer.dart';
 
 class SalesHistoryScreen extends StatelessWidget {
   const SalesHistoryScreen({super.key});
@@ -10,7 +10,7 @@ class SalesHistoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Sales History'),
       ),
-      drawer: const OwnerDrawer(),
+      drawer: const SellerDrawer(),
       body: ListView.builder(
         itemCount: 15, // Placeholder count
         itemBuilder: (context, index) {

@@ -1,4 +1,4 @@
-enum PurchaseStatus { pendingVerification, verifiedReadyForPickup, completed }
+enum PurchaseStatus { pendingVerification, paymentApproved, verifiedReadyForPickup, completed, rejected }
 
 class Purchase {
   final String id;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/screens/buyer/buyer_dashboard_screen.dart';
-import 'package:smartlocker/screens/owner/owner_dashboard_screen.dart';
+import 'package:smartlocker/screens/owner/owner_role_selection_screen.dart';
 import 'package:smartlocker/screens/auth/otp_screen.dart'; // <-- PERBAIKAN: IMPORT DITAMBAHKAN
 import 'package:smartlocker/utils/app_colors.dart';
 
@@ -58,7 +58,7 @@ class LoginRegisterScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => userType == UserType.owner
-                        ? const OwnerDashboardScreen()
+                        ? const OwnerRoleSelectionScreen()
                         : const BuyerDashboardScreen(),
                   ),
                   (route) => false,
