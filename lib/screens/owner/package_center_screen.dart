@@ -52,6 +52,84 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
     );
   }
 
+  void _showPackageOptions(BuildContext context, Package package) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Package'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _navigateToEditPackage(package);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete Package', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDeletePackage(package);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _navigateToEditPackage(Package package) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageInputScreen(package: package),
+      ),
+    );
+    if (result == true) {
+      _refreshPackages();
+    }
+  }
+
+  void _confirmDeletePackage(Package package) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Package'),
+          content: Text('Are you sure you want to delete "${package.packageName}"?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deletePackage(package);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deletePackage(Package package) {
+    _packageService.deletePackage(package.id);
+    _refreshPackages();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Package deleted successfully!')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,6 +192,7 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
               ),
             ),
             onTap: () => _navigateToPackageDetail(package),
+            onLongPress: () => _showPackageOptions(context, package),
           ),
         );
       },
