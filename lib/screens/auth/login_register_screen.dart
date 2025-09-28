@@ -85,6 +85,10 @@ class LoginRegisterScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 20),
+            _buildTextField(label: 'First Name'),
+            const SizedBox(height: 16),
+            _buildTextField(label: 'Last Name'),
+            const SizedBox(height: 16),
             _buildTextField(label: 'Email'),
             const SizedBox(height: 16),
             _buildTextField(label: 'Password', obscureText: true),
