@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:smartlocker/models/purchase.dart';
-import 'package:smartlocker/services/purchase_service.dart';
+import 'package:smartlocker/config/api_routes.dart';
+import 'package:smartlocker/models/transaction.dart';
+import 'package:smartlocker/services/api_client.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 import 'package:smartlocker/widgets/buyer_drawer.dart';
 
 class OtpInputScreen extends StatefulWidget {
-  final Purchase purchase;
+  final TransactionModel transaction;
 
-  const OtpInputScreen({super.key, required this.purchase});
+  const OtpInputScreen({super.key, required this.transaction});
 
   @override
   State<OtpInputScreen> createState() => _OtpInputScreenState();
@@ -15,8 +16,9 @@ class OtpInputScreen extends StatefulWidget {
 
 class _OtpInputScreenState extends State<OtpInputScreen> {
   final _otpController = TextEditingController();
-  final PurchaseService _purchaseService = PurchaseService();
+  final ApiClient _apiClient = ApiClient();
   bool _isVerifying = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -24,64 +26,30 @@ class _OtpInputScreenState extends State<OtpInputScreen> {
     super.dispose();
   }
 
-  void _verifyOtp() {
+  Future<void> _verifyOtp() async {
     setState(() {
       _isVerifying = true;
+      _error = null;
     });
-
-    // Simulate API call delay
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isVerifying = false;
-        });
-
-        if (_otpController.text == widget.purchase.otp) {
-          // Update purchase status to completed
-          final index = _purchaseService.getPurchases().indexWhere((p) => p.id == widget.purchase.id);
-          if (index != -1) {
-            _purchaseService.getPurchases()[index].status = PurchaseStatus.completed;
-            // Notify seller that package has been picked up
-            _purchaseService.markPurchaseAsCompleted(widget.purchase.id);
-          }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Package picked up successfully!')),
-          );
-
-          // In a real app, you would notify the seller here
-          // For now, we'll just show a message
-          if (mounted) {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Success'),
-                  content: const Text('Package picked up successfully! The seller has been notified.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        if (mounted) {
-                          Navigator.of(context).pop(true); // Return true to indicate success
-                        }
-                      },
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Invalid OTP. Please try again.')),
-            );
-          }
-        }
-      }
-    });
+    try {
+      await _apiClient.post(
+        ApiRoutes.lockersValidateOtp,
+        body: {'otp': _otpController.text},
+      );
+      if (!mounted) return;
+      setState(() => _isVerifying = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('OTP validated. Locker should be opening!')),
+      );
+      Navigator.of(context).pop(true);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isVerifying = false;
+        _error = error.toString();
+      });
+    }
   }
 
   @override
@@ -102,7 +70,7 @@ class _OtpInputScreenState extends State<OtpInputScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Product: ${widget.purchase.productName}',
+              'Product: ${widget.transaction.product?.name ?? 'Unknown product'}',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 32),
@@ -123,6 +91,13 @@ class _OtpInputScreenState extends State<OtpInputScreen> {
               style: const TextStyle(fontSize: 24),
             ),
             const SizedBox(height: 32),
+            if (_error != null) ...[
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+              ),
+              const SizedBox(height: 12),
+            ],
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

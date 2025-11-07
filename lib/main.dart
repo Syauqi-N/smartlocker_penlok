@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-// Diperbaiki agar sesuai dengan nama di pubspec.yaml Anda
 import 'package:smartlocker/screens/auth/landing_screen.dart';
+import 'package:smartlocker/services/auth_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AuthService.instance.initialise();
   runApp(const MyApp());
 }
 

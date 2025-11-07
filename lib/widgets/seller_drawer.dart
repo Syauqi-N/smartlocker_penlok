@@ -5,6 +5,7 @@ import 'package:smartlocker/screens/owner/owner_notifications_screen.dart';
 import 'package:smartlocker/screens/owner/payment_verification_main_screen.dart';
 import 'package:smartlocker/screens/owner/product_management_screen.dart';
 import 'package:smartlocker/screens/owner/sales_history_screen.dart';
+import 'package:smartlocker/services/auth_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
 class SellerDrawer extends StatelessWidget {
@@ -59,6 +60,7 @@ class SellerDrawer extends StatelessWidget {
             icon: Icons.logout,
             text: 'Logout',
             onTap: () {
+              AuthService.instance.logout();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const LandingScreen()),

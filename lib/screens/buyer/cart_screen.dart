@@ -36,12 +36,7 @@ class _CartScreenState extends State<CartScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  Image.asset(
-                    cartItem.product.imageUrl,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
+                  _CartProductImage(imageUrl: cartItem.product.imageUrl),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -114,7 +109,8 @@ class _CartScreenState extends State<CartScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Total Price:', style: TextStyle(color: AppColors.grey)),
+              const Text('Total Price:',
+                  style: TextStyle(color: AppColors.grey)),
               Text(
                 'IDR ${_cartService.totalCost.toStringAsFixed(0)}',
                 style:
@@ -131,13 +127,43 @@ class _CartScreenState extends State<CartScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.secondary,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
             ),
-            child:
-                const Text('CHECKOUT', style: TextStyle(color: AppColors.white)),
+            child: const Text('CHECKOUT',
+                style: TextStyle(color: AppColors.white)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CartProductImage extends StatelessWidget {
+  const _CartProductImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    const placeholder = 'assets/images/placeholder.png';
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      return Image.asset(
+        placeholder,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      imageUrl!,
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        placeholder,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
       ),
     );
   }

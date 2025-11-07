@@ -50,7 +50,8 @@ class ReceiptRegistrationScreen extends StatelessWidget {
                     backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('SAVE RECEIPT', style: TextStyle(color: AppColors.black)),
+                  child: const Text('SAVE RECEIPT',
+                      style: TextStyle(color: AppColors.black)),
                 )
               ],
             ),

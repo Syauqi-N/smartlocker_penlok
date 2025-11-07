@@ -19,13 +19,9 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
+            SizedBox(
               height: 300,
-              color: Colors.grey[300],
-              child: Image.asset(
-                product.imageUrl,
-                fit: BoxFit.cover,
-              ),
+              child: _ProductImage(imageUrl: product.imageUrl),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -34,7 +30,8 @@ class ProductDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -45,13 +42,24 @@ class ProductDetailScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Chip(
+                        backgroundColor: AppColors.primary.withAlpha(77),
+                        label: Text('Stock: ${product.stock}'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   const Text(
                     'Product Details',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'This is a placeholder description for ${product.name}. It is made with high-quality materials and would be a great addition to any home or office. Weight: ${product.weight}g, Stock: ${product.stock}.',
+                    product.description.isEmpty
+                        ? 'No description available.'
+                        : product.description,
                     style: const TextStyle(fontSize: 16, height: 1.5),
                   ),
                 ],
@@ -105,17 +113,43 @@ class ProductDetailScreen extends StatelessWidget {
                 CartService().addToCart(product);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const CheckoutScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text('BUY NOW', style: TextStyle(color: AppColors.white)),
+              child: const Text('BUY NOW',
+                  style: TextStyle(color: AppColors.white)),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  const _ProductImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      return Image.asset(
+        'assets/images/placeholder.png',
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      imageUrl!,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/placeholder.png',
+        fit: BoxFit.cover,
       ),
     );
   }

@@ -1,43 +1,146 @@
-import 'dart:math';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:smartlocker/config/api_routes.dart';
 import 'package:smartlocker/models/product.dart';
+import 'package:smartlocker/services/api_client.dart';
 
 class ProductService {
-  // Singleton pattern to ensure only one instance of the service
-  static final ProductService _instance = ProductService._internal();
-  factory ProductService() => _instance;
   ProductService._internal();
+  factory ProductService() => instance;
 
-  final List<Product> _products = [
-    Product(id: '1', name: 'Produk Contoh 1', price: 150000, weight: 500, stock: 10),
-    Product(id: '2', name: 'Produk Contoh 2', price: 250000, weight: 750, stock: 5),
-    Product(id: '3', name: 'Produk Contoh 3', price: 75000, weight: 200, stock: 20),
-  ];
+  static final ProductService instance = ProductService._internal();
+  final ApiClient _apiClient = ApiClient();
 
-  List<Product> getProducts() {
-    return _products;
+  Future<List<Product>> fetchProducts() async {
+    final response = await _apiClient.get(ApiRoutes.marketplaceProducts);
+
+    if (response.statusCode != 200) {
+      throw ProductServiceException(
+          _parseError(response.body) ?? 'Unable to load products.');
+    }
+
+    final decoded = jsonDecode(response.body) as List<dynamic>;
+    return decoded
+        .map((item) => Product.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
-  void addProduct(Product product) {
-    // Assign a unique ID
-    final newProduct = Product(
-      id: Random().nextInt(10000).toString(),
-      name: product.name,
-      price: product.price,
-      weight: product.weight,
-      stock: product.stock,
-      imageUrl: product.imageUrl,
-    );
-    _products.add(newProduct);
+  Future<Product> createProduct({
+    required String name,
+    required double price,
+    required int stock,
+    required String description,
+    String? imagePath,
+  }) async {
+    final http.Response response;
+
+    if (imagePath != null && imagePath.isNotEmpty) {
+      response = await _apiClient.multipart(
+        'POST',
+        ApiRoutes.marketplaceProducts,
+        fields: {
+          'name': name,
+          'price': price.toString(),
+          'stock': stock.toString(),
+          'description': description,
+        },
+        files: {'image': imagePath},
+      );
+    } else {
+      response = await _apiClient.post(
+        ApiRoutes.marketplaceProducts,
+        body: jsonEncode({
+          'name': name,
+          'price': price,
+          'stock': stock,
+          'description': description,
+        }),
+      );
+    }
+
+    if (response.statusCode != 201) {
+      throw ProductServiceException(
+          _parseError(response.body) ?? 'Unable to create product.');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return Product.fromJson(decoded);
   }
 
-  void updateProduct(Product product) {
-    final index = _products.indexWhere((p) => p.id == product.id);
-    if (index != -1) {
-      _products[index] = product;
+  Future<Product> updateProduct({
+    required int id,
+    required String name,
+    required double price,
+    required int stock,
+    required String description,
+    String? imagePath,
+    bool removeImage = false,
+  }) async {
+    final http.Response response;
+
+    if (imagePath != null && imagePath.isNotEmpty) {
+      response = await _apiClient.multipart(
+        'PUT',
+        '${ApiRoutes.marketplaceProducts}$id/',
+        fields: {
+          'name': name,
+          'price': price.toString(),
+          'stock': stock.toString(),
+          'description': description,
+        },
+        files: {'image': imagePath},
+      );
+    } else {
+      response = await _apiClient.put(
+        '${ApiRoutes.marketplaceProducts}$id/',
+        body: jsonEncode({
+          'name': name,
+          'price': price,
+          'stock': stock,
+          'description': description,
+          if (removeImage) 'image': null,
+        }),
+      );
+    }
+
+    if (response.statusCode != 200) {
+      throw ProductServiceException(
+          _parseError(response.body) ?? 'Unable to update product.');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return Product.fromJson(decoded);
+  }
+
+  Future<void> deleteProduct(int id) async {
+    final response =
+        await _apiClient.delete('${ApiRoutes.marketplaceProducts}$id/');
+
+    if (response.statusCode != 204) {
+      throw ProductServiceException(
+          _parseError(response.body) ?? 'Unable to delete product.');
     }
   }
 
-  void deleteProduct(String productId) {
-    _products.removeWhere((p) => p.id == productId);
+  String? _parseError(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['detail'] != null) return decoded['detail'].toString();
+        if (decoded['error'] != null) return decoded['error'].toString();
+      }
+      return decoded.toString();
+    } catch (_) {
+      return null;
+    }
   }
+}
+
+class ProductServiceException implements Exception {
+  const ProductServiceException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
 }

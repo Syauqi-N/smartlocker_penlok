@@ -34,45 +34,68 @@ class PackageDetailScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               package.packageName,
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: _getStatusColor(package.status),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              package.status.toString().split('.').last.toUpperCase(),
-                              style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+                              package.status
+                                  .toString()
+                                  .split('.')
+                                  .last
+                                  .toUpperCase(),
+                              style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildDetailRow('Tracking Number', package.trackingNumber),
+                      _buildDetailRow('Tracking Number',
+                          package.trackingNumber ?? '-'),
                       const SizedBox(height: 8),
-                      if (package.courier != null) _buildDetailRow('Courier', package.courier!),
+                      if (package.courier != null)
+                        _buildDetailRow('Courier', package.courier!),
                       const SizedBox(height: 8),
                       if (package.orderDate != null)
-                        _buildDetailRow('Order Date', _formatDate(package.orderDate!)),
+                        _buildDetailRow(
+                            'Order Date', _formatDate(package.orderDate!)),
+                      const SizedBox(height: 8),
+                      if (package.buyerPhoneNumber != null &&
+                          package.buyerPhoneNumber!.isNotEmpty)
+                        _buildDetailRow(
+                            'Receiver Phone', package.buyerPhoneNumber!),
+                      if (package.shippingAddress != null &&
+                          package.shippingAddress!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _buildDetailRow(
+                            'Delivery Address', package.shippingAddress!),
+                      ],
                       const SizedBox(height: 8),
                       if (package.deliveredDate != null)
-                        _buildDetailRow('Delivered Date', _formatDate(package.deliveredDate!)),
+                        _buildDetailRow('Delivered Date',
+                            _formatDate(package.deliveredDate!)),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Tracking History Title
               const Text(
                 'Tracking History',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              
+
               // Tracking History List
               if (package.trackingHistory.isEmpty)
                 const Center(
@@ -91,12 +114,12 @@ class PackageDetailScreen extends StatelessWidget {
     // Sort events by timestamp (newest first)
     final sortedEvents = List<PackageTrackingEvent>.from(events)
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    
+
     List<Widget> timeline = [];
-    
+
     for (int i = 0; i < sortedEvents.length; i++) {
       final event = sortedEvents[i];
-      
+
       timeline.add(
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +144,7 @@ class PackageDetailScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(width: 16),
-            
+
             // Event details
             Expanded(
               child: Card(
@@ -152,7 +175,8 @@ class PackageDetailScreen extends StatelessWidget {
                           ),
                           Text(
                             _formatDateTime(event.timestamp),
-                            style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 12),
                           ),
                         ],
                       ),
@@ -165,7 +189,7 @@ class PackageDetailScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     return timeline;
   }
 
@@ -193,6 +217,8 @@ class PackageDetailScreen extends StatelessWidget {
         return Colors.blue;
       case PackageStatus.completed:
         return Colors.green;
+      case PackageStatus.failed:
+        return Colors.red;
     }
   }
 

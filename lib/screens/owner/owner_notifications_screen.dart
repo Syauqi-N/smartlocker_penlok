@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:smartlocker/services/purchase_service.dart';
+import 'package:smartlocker/models/app_notification.dart';
+import 'package:smartlocker/services/notification_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 import 'package:smartlocker/widgets/seller_drawer.dart';
 
@@ -7,108 +10,119 @@ class OwnerNotificationsScreen extends StatefulWidget {
   const OwnerNotificationsScreen({super.key});
 
   @override
-  State<OwnerNotificationsScreen> createState() => _OwnerNotificationsScreenState();
+  State<OwnerNotificationsScreen> createState() =>
+      _OwnerNotificationsScreenState();
 }
 
 class _OwnerNotificationsScreenState extends State<OwnerNotificationsScreen> {
-  final PurchaseService _purchaseService = PurchaseService();
+  final NotificationService _notificationService = NotificationService.instance;
+  final List<AppNotification> _notifications = [];
+  bool _loading = false;
+  String? _error;
+  Timer? _poller;
 
-  void _markAsRead(String notificationId) {
-    setState(() {
-      _purchaseService.markNotificationAsRead(notificationId);
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+    _poller = Timer.periodic(
+        const Duration(seconds: 30), (_) => _loadNotifications(rebuild: false));
+  }
+
+  @override
+  void dispose() {
+    _poller?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadNotifications({bool rebuild = true}) async {
+    if (rebuild) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
+    try {
+      final data = await _notificationService.fetchNotifications();
+      if (!mounted) return;
+      setState(() {
+        _notifications
+          ..clear()
+          ..addAll(data);
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = error.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifications = _purchaseService.getSellerNotifications();
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Notifications'),
       ),
       drawer: const SellerDrawer(),
-      body: notifications.isEmpty
-          ? const Center(
-              child: Text('No notifications.', style: TextStyle(fontSize: 16, color: AppColors.grey)),
-            )
-          : ListView.builder(
-              itemCount: notifications.length,
-              itemBuilder: (context, index) {
-                final notification = notifications[index];
-                final isRead = notification['isRead'];
-                final timestamp = notification['timestamp'] as DateTime;
-                
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  color: isRead ? AppColors.white : AppColors.primary.withAlpha(30),
-                  child: ListTile(
-                    leading: Icon(
-                      _getIconForNotification(notification['title']),
-                      color: _getColorForNotification(notification['title']),
-                    ),
-                    title: Text(
-                      notification['title'],
-                      style: TextStyle(
-                        fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-                        color: isRead ? AppColors.black : AppColors.primary,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(notification['message']),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatTimestamp(timestamp),
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    trailing: isRead 
-                        ? null 
-                        : IconButton(
-                            icon: const Icon(Icons.mark_email_read, color: AppColors.primary),
-                            onPressed: () => _markAsRead(notification['id']),
-                          ),
-                    onTap: isRead ? null : () => _markAsRead(notification['id']),
-                  ),
-                );
-              },
-            ),
+      body: RefreshIndicator(
+        onRefresh: _loadNotifications,
+        child: _buildBody(),
+      ),
     );
   }
 
-  IconData _getIconForNotification(String title) {
-    if (title.contains('Order')) {
-      return Icons.shopping_cart_checkout;
-    } else if (title.contains('Payment')) {
-      return Icons.payment;
-    } else if (title.contains('OTP')) {
-      return Icons.lock;
-    } else if (title.contains('Package')) {
-      return Icons.inventory;
+  Widget _buildBody() {
+    if (_loading && _notifications.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
     }
-    return Icons.notifications;
-  }
 
-  Color _getColorForNotification(String title) {
-    if (title.contains('Order')) {
-      return AppColors.secondary;
-    } else if (title.contains('Payment')) {
-      return Colors.blue;
-    } else if (title.contains('OTP')) {
-      return AppColors.primary;
-    } else if (title.contains('Package')) {
-      return Colors.green;
+    if (_error != null && _notifications.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [Text(_error!, style: const TextStyle(color: Colors.red))],
+      );
     }
-    return AppColors.grey;
+
+    if (_notifications.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: const [
+          Text('No notifications.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.grey))
+        ],
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _notifications.length,
+      itemBuilder: (context, index) {
+        final notification = _notifications[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: const Icon(Icons.notifications, color: AppColors.primary),
+            title: Text(notification.title.isEmpty
+                ? 'SmartLocker Update'
+                : notification.title),
+            subtitle: Text(notification.body),
+            trailing: Text(
+              _formatTimestamp(notification.createdAt),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {

@@ -4,14 +4,14 @@ import 'package:smartlocker/services/cart_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product;
-  final VoidCallback onTap;
-
   const ProductCard({
     super.key,
     required this.product,
     required this.onTap,
   });
+
+  final Product product;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +24,7 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: Image.asset(
-                product.imageUrl,
-                fit: BoxFit.cover,
-              ),
-            ),
+            Expanded(child: _ProductImage(imageUrl: product.imageUrl)),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -47,8 +42,7 @@ class ProductCard extends StatelessWidget {
                     children: [
                       Text(
                         'IDR ${product.price.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                            color: AppColors.secondary, fontSize: 14),
+                        style: const TextStyle(color: AppColors.secondary, fontSize: 14),
                       ),
                       IconButton(
                         icon: const Icon(Icons.add_shopping_cart),
@@ -70,6 +64,27 @@ class ProductCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  const _ProductImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      return Image.asset(
+        'assets/images/placeholder.png',
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      imageUrl!,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset('assets/images/placeholder.png', fit: BoxFit.cover),
     );
   }
 }

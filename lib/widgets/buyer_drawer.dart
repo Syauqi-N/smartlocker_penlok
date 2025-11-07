@@ -5,6 +5,7 @@ import 'package:smartlocker/screens/buyer/buyer_notifications_screen.dart';
 import 'package:smartlocker/screens/buyer/buyer_otp_list_screen.dart';
 import 'package:smartlocker/screens/buyer/cart_screen.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/services/auth_service.dart';
 
 class BuyerDrawer extends StatelessWidget {
   const BuyerDrawer({super.key});
@@ -53,6 +54,7 @@ class BuyerDrawer extends StatelessWidget {
             icon: Icons.logout,
             text: 'Logout',
             onTap: () {
+              AuthService.instance.logout();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const LandingScreen()),

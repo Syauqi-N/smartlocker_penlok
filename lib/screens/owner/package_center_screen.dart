@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
 import 'package:smartlocker/screens/owner/package_detail_screen.dart';
-import 'package:smartlocker/screens/owner/package_input_screen.dart';
 import 'package:smartlocker/services/package_service.dart';
+import 'package:smartlocker/screens/owner/package_input_screen.dart';
+import 'package:smartlocker/utils/app_colors.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageCenterScreen extends StatefulWidget {
@@ -14,13 +15,18 @@ class PackageCenterScreen extends StatefulWidget {
 
 class _PackageCenterScreenState extends State<PackageCenterScreen>
     with SingleTickerProviderStateMixin {
-  final PackageService _packageService = PackageService();
+  final PackageService _packageService = PackageService.instance;
   late TabController _tabController;
+  final List<Package> _activePackages = [];
+  final List<Package> _completedPackages = [];
+  bool _loading = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadPackages();
   }
 
   @override
@@ -29,105 +35,37 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
     super.dispose();
   }
 
-  void _refreshPackages() {
-    setState(() {});
-  }
-
-  void _navigateToAddPackage() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const PackageInputScreen()),
-    );
-    if (result == true) {
-      _refreshPackages();
+  Future<void> _loadPackages() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final packages = await _packageService.fetchPackages();
+      final active = packages
+          .where((p) =>
+              p.status == PackageStatus.inTransit ||
+              p.status == PackageStatus.delivered)
+          .toList();
+      final completed =
+          packages.where((p) => p.status == PackageStatus.completed).toList();
+      if (!mounted) return;
+      setState(() {
+        _activePackages
+          ..clear()
+          ..addAll(active);
+        _completedPackages
+          ..clear()
+          ..addAll(completed);
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = error.toString();
+      });
     }
-  }
-
-  void _navigateToPackageDetail(Package package) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PackageDetailScreen(package: package),
-      ),
-    );
-  }
-
-  void _showPackageOptions(BuildContext context, Package package) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Edit Package'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _navigateToEditPackage(package);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete Package', style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDeletePackage(package);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _navigateToEditPackage(Package package) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PackageInputScreen(package: package),
-      ),
-    );
-    if (result == true) {
-      _refreshPackages();
-    }
-  }
-
-  void _confirmDeletePackage(Package package) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Package'),
-          content: Text('Are you sure you want to delete "${package.packageName}"?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deletePackage(package);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _deletePackage(Package package) {
-    _packageService.deletePackage(package.id);
-    _refreshPackages();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Package deleted successfully!')),
-    );
   }
 
   @override
@@ -144,16 +82,35 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
         ),
       ),
       drawer: const ReceiverDrawer(),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildPackageList(_packageService.getActivePackages()),
-          _buildPackageList(_packageService.getCompletedPackages()),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final created = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PackageInputScreen(),
+            ),
+          );
+          if (created == true) {
+            _loadPackages();
+          }
+        },
+        backgroundColor: AppColors.primary,
+        label: const Text('Add Package'),
+        icon: const Icon(Icons.add, color: AppColors.black),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddPackage,
-        child: const Icon(Icons.add),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : RefreshIndicator(
+                  onRefresh: _loadPackages,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildPackageList(_activePackages),
+                      _buildPackageList(_completedPackages),
+                    ],
+                  ),
       ),
     );
   }
@@ -173,7 +130,7 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Resi: ${package.trackingNumber}'),
+                Text('Resi: ${package.trackingNumber ?? '-'}'),
                 if (package.courier != null && package.courier!.isNotEmpty)
                   Text('Courier: ${package.courier}'),
                 if (package.orderDate != null)
@@ -184,15 +141,22 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
             trailing: Text(
               package.status.toString().split('.').last,
               style: TextStyle(
-                color: package.status == PackageStatus.inTransit
-                    ? Colors.orange
-                    : package.status == PackageStatus.delivered
-                        ? Colors.blue
-                        : Colors.green,
+                color: switch (package.status) {
+                  PackageStatus.inTransit => Colors.orange,
+                  PackageStatus.delivered => Colors.blue,
+                  PackageStatus.completed => Colors.green,
+                  PackageStatus.failed => Colors.red,
+                },
               ),
             ),
-            onTap: () => _navigateToPackageDetail(package),
-            onLongPress: () => _showPackageOptions(context, package),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PackageDetailScreen(package: package),
+                ),
+              );
+            },
           ),
         );
       },

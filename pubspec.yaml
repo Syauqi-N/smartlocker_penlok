@@ -10,11 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   # UI Packages
   flutter_svg: ^2.0.10+1
   fl_chart: ^0.68.0 # For placeholder charts
   cupertino_icons: ^1.0.6
+  http: ^1.2.2
+  shared_preferences: ^2.3.2
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

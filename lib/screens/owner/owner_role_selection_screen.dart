@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/screens/owner/owner_dashboard_screen.dart';
-import 'package:smartlocker/screens/owner/receiver_dashboard_screen.dart';
+import 'package:smartlocker/screens/owner/package_receiver_screen.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
 class OwnerRoleSelectionScreen extends StatelessWidget {
@@ -16,7 +16,7 @@ class OwnerRoleSelectionScreen extends StatelessWidget {
   void _navigateToReceiver(BuildContext context) {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const ReceiverDashboardScreen()),
+      MaterialPageRoute(builder: (context) => const PackageReceiverScreen()),
     );
   }
 
@@ -44,7 +44,8 @@ class OwnerRoleSelectionScreen extends StatelessWidget {
             _buildRoleCard(
               context: context,
               title: 'Seller',
-              description: 'Manage your e-commerce business, products, and sales',
+              description:
+                  'Manage your e-commerce business, products, and sales',
               icon: Icons.store,
               onTap: () => _navigateToSeller(context),
               color: AppColors.primary,
@@ -53,7 +54,8 @@ class OwnerRoleSelectionScreen extends StatelessWidget {
             _buildRoleCard(
               context: context,
               title: 'Package Receiver',
-              description: 'Manage package center, incoming packages, and pickups',
+              description:
+                  'Manage package center, incoming packages, and pickups',
               icon: Icons.inventory,
               onTap: () => _navigateToReceiver(context),
               color: Colors.blue,
@@ -86,7 +88,8 @@ class OwnerRoleSelectionScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(

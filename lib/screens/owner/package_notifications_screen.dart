@@ -4,17 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/app_notification.dart';
 import 'package:smartlocker/services/notification_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
-import 'package:smartlocker/widgets/buyer_drawer.dart';
+import 'package:smartlocker/widgets/receiver_drawer.dart';
 
-class BuyerNotificationsScreen extends StatefulWidget {
-  const BuyerNotificationsScreen({super.key});
+class PackageNotificationsScreen extends StatefulWidget {
+  const PackageNotificationsScreen({super.key});
 
   @override
-  State<BuyerNotificationsScreen> createState() =>
-      _BuyerNotificationsScreenState();
+  State<PackageNotificationsScreen> createState() =>
+      _PackageNotificationsScreenState();
 }
 
-class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
+class _PackageNotificationsScreenState
+    extends State<PackageNotificationsScreen> {
   final NotificationService _notificationService = NotificationService.instance;
   final List<AppNotification> _notifications = [];
   bool _loading = false;
@@ -25,9 +26,8 @@ class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
   void initState() {
     super.initState();
     _loadNotifications();
-    _poller = Timer.periodic(const Duration(seconds: 30), (_) {
-      _loadNotifications(rebuild: false);
-    });
+    _poller = Timer.periodic(
+        const Duration(seconds: 30), (_) => _loadNotifications(rebuild: false));
   }
 
   @override
@@ -61,17 +61,15 @@ class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
     }
   }
 
-  Future<void> _handleRefresh() => _loadNotifications();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Notifications'),
+        title: const Text('Package Notifications'),
       ),
-      drawer: const BuyerDrawer(),
+      drawer: const ReceiverDrawer(),
       body: RefreshIndicator(
-        onRefresh: _handleRefresh,
+        onRefresh: _loadNotifications,
         child: _buildBody(),
       ),
     );
@@ -85,12 +83,7 @@ class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
     if (_error != null && _notifications.isEmpty) {
       return ListView(
         padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            _error!,
-            style: const TextStyle(color: Colors.red),
-          ),
-        ],
+        children: [Text(_error!, style: const TextStyle(color: Colors.red))],
       );
     }
 
@@ -98,28 +91,26 @@ class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: const [
-          Text(
-            'You have no notifications yet.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: AppColors.grey),
-          ),
+          Text('No delivery notifications yet.', textAlign: TextAlign.center)
         ],
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.all(16),
       itemCount: _notifications.length,
       itemBuilder: (context, index) {
-        final item = _notifications[index];
+        final notification = _notifications[index];
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
-            leading: const Icon(Icons.notifications_none),
-            title: Text(item.title.isEmpty ? 'SmartLocker' : item.title),
-            subtitle: Text(item.body),
+            leading: const Icon(Icons.inventory_2, color: AppColors.secondary),
+            title: Text(notification.title.isEmpty
+                ? 'SmartLocker Update'
+                : notification.title),
+            subtitle: Text(notification.body),
             trailing: Text(
-              _formatTimestamp(item.createdAt),
+              _formatTimestamp(notification.createdAt),
               style: const TextStyle(fontSize: 12, color: AppColors.grey),
             ),
           ),
@@ -128,12 +119,19 @@ class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
     );
   }
 
-  String _formatTimestamp(DateTime time) {
-    final dt = time.toLocal();
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month $hour:$minute';
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inMinutes < 1) return 'just now';
+    if (difference.inMinutes < 60) return '${difference.inMinutes} minutes ago';
+    if (difference.inHours < 24) return '${difference.inHours} hours ago';
+    if (difference.inDays < 7) return '${difference.inDays} days ago';
+
+    final formattedDate =
+        '${timestamp.day.toString().padLeft(2, '0')}/${timestamp.month.toString().padLeft(2, '0')}/${timestamp.year}';
+    final formattedTime =
+        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+    return '$formattedDate $formattedTime';
   }
 }
