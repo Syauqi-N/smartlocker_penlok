@@ -1,140 +1,102 @@
-import 'package:smartlocker/models/transaction.dart';
+enum PackageStatus { registered, inTransit, delivered }
 
-enum PackageStatus { inTransit, delivered, completed, failed }
+PackageStatus packageStatusFromString(String? value) {
+  switch (value) {
+    case 'IN_TRANSIT':
+      return PackageStatus.inTransit;
+    case 'DELIVERED':
+      return PackageStatus.delivered;
+    case 'REGISTERED':
+    default:
+      return PackageStatus.registered;
+  }
+}
+
+extension PackageStatusExtension on PackageStatus {
+  String get label {
+    switch (this) {
+      case PackageStatus.registered:
+        return 'Registered';
+      case PackageStatus.inTransit:
+        return 'In Transit';
+      case PackageStatus.delivered:
+        return 'Delivered';
+    }
+  }
+
+  String get apiValue {
+    switch (this) {
+      case PackageStatus.registered:
+        return 'REGISTERED';
+      case PackageStatus.inTransit:
+        return 'IN_TRANSIT';
+      case PackageStatus.delivered:
+        return 'DELIVERED';
+    }
+  }
+}
 
 class Package {
   Package({
     required this.id,
     required this.packageName,
-    this.trackingNumber,
+    required this.trackingNumber,
     this.courier,
     this.orderDate,
     this.deliveredDate,
-    this.status = PackageStatus.inTransit,
-    this.totalPrice,
-    this.buyerName,
-    this.buyerPhoneNumber,
-    this.shippingAddress,
-    this.transaction,
-    List<PackageTrackingEvent>? trackingHistory,
-  }) : trackingHistory = trackingHistory ?? [];
+    this.status = PackageStatus.registered,
+    this.lockerSlot,
+    this.receiverName,
+    this.receiverPhone,
+    this.notes,
+  });
 
-  final String id;
+  final int id;
   final String packageName;
-  final String? trackingNumber;
+  final String trackingNumber;
   final String? courier;
   final DateTime? orderDate;
-  DateTime? deliveredDate;
-  PackageStatus status;
-  final double? totalPrice;
-  final String? buyerName;
-  final String? buyerPhoneNumber;
-  final String? shippingAddress;
-  final TransactionModel? transaction;
-  final List<PackageTrackingEvent> trackingHistory;
+  final DateTime? deliveredDate;
+  final PackageStatus status;
+  final String? lockerSlot;
+  final String? receiverName;
+  final String? receiverPhone;
+  final String? notes;
 
-  PackageTrackingEvent? get latestTrackingEvent {
-    if (trackingHistory.isEmpty) return null;
-    trackingHistory.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return trackingHistory.first;
-  }
+  factory Package.fromJson(Map<String, dynamic> json) {
+    DateTime? parseDate(dynamic value) {
+      if (value == null) return null;
+      return DateTime.tryParse(value.toString());
+    }
 
-  factory Package.fromTransaction(TransactionModel tx) {
-    final history = _buildHistory(tx);
     return Package(
-      id: tx.id.toString(),
-      packageName: tx.product?.name ?? 'Transaction #${tx.id}',
-      trackingNumber: tx.paymentGatewayId ?? 'TRX-${tx.id}',
-      courier: tx.sellerName,
-      orderDate: tx.createdAt,
-      deliveredDate: tx.status == TransactionStatus.completed
-          ? tx.updatedAt ?? tx.createdAt
-          : null,
-      status: _mapStatus(tx.status),
-      totalPrice: tx.totalPrice,
-      buyerName: tx.buyerFullName.isNotEmpty ? tx.buyerFullName : tx.buyerName,
-      buyerPhoneNumber: tx.buyerPhoneNumber,
-      shippingAddress: tx.shippingAddress,
-      transaction: tx,
-      trackingHistory: history,
+      id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}') ?? 0,
+      packageName: json['package_name']?.toString() ?? '-',
+      trackingNumber: json['tracking_number']?.toString() ?? '-',
+      courier: json['courier']?.toString(),
+      orderDate: parseDate(json['order_date']),
+      deliveredDate: parseDate(json['delivered_date']),
+      status: packageStatusFromString(json['status']?.toString()),
+      lockerSlot: json['locker_slot']?.toString(),
+      receiverName: json['receiver_name']?.toString(),
+      receiverPhone: json['receiver_phone']?.toString(),
+      notes: json['notes']?.toString(),
     );
   }
 
-  static PackageStatus _mapStatus(TransactionStatus status) {
-    switch (status) {
-      case TransactionStatus.completed:
-        return PackageStatus.completed;
-      case TransactionStatus.released:
-      case TransactionStatus.awaitingPickup:
-        return PackageStatus.delivered;
-      case TransactionStatus.failed:
-      case TransactionStatus.rejected:
-        return PackageStatus.failed;
-      case TransactionStatus.pending:
-      case TransactionStatus.escrow:
-      case TransactionStatus.paid:
-        return PackageStatus.inTransit;
-    }
+  Map<String, dynamic> toJson() {
+    return {
+      'package_name': packageName,
+      'tracking_number': trackingNumber,
+      if (courier != null) 'courier': courier,
+      if (orderDate != null) 'order_date': orderDate!.toIso8601String(),
+      if (deliveredDate != null)
+        'delivered_date': deliveredDate!.toIso8601String(),
+      'status': status.apiValue,
+      if (lockerSlot != null) 'locker_slot': lockerSlot,
+      if (receiverName != null) 'receiver_name': receiverName,
+      if (receiverPhone != null) 'receiver_phone': receiverPhone,
+      if (notes != null) 'notes': notes,
+    };
   }
-
-  static List<PackageTrackingEvent> _buildHistory(TransactionModel tx) {
-    final events = <PackageTrackingEvent>[];
-    final createdAt = tx.createdAt ?? DateTime.now();
-    events.add(
-      PackageTrackingEvent(
-        location: 'SmartLocker System',
-        description: 'Order created',
-        timestamp: createdAt,
-        status: tx.status.name.toUpperCase(),
-      ),
-    );
-    if (tx.status == TransactionStatus.awaitingPickup ||
-        tx.status == TransactionStatus.released) {
-      events.add(
-        PackageTrackingEvent(
-          location: 'Locker',
-          description: 'Order ready for pickup',
-          timestamp: tx.updatedAt ?? createdAt,
-          status: 'READY_FOR_PICKUP',
-        ),
-      );
-    }
-    if (tx.status == TransactionStatus.completed) {
-      events.add(
-        PackageTrackingEvent(
-          location: 'Locker',
-          description: 'Order picked up',
-          timestamp: tx.updatedAt ?? DateTime.now(),
-          status: 'COMPLETED',
-        ),
-      );
-    }
-    return events;
-  }
-}
-
-class PackageNotification {
-  PackageNotification({
-    required this.package,
-    required this.timestamp,
-    required this.isRead,
-  });
-
-  final Package package;
-  final DateTime timestamp;
-  final bool isRead;
-}
-
-class PackageTrackingEvent {
-  final String location;
-  final String description;
-  final DateTime timestamp;
-  final String status;
-
-  PackageTrackingEvent({
-    required this.location,
-    required this.description,
-    required this.timestamp,
-    required this.status,
-  });
 }

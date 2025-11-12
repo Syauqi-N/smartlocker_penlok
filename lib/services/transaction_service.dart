@@ -97,14 +97,14 @@ class TransactionService {
     return TransactionModel.fromJson(data);
   }
 
-  Future<TransactionModel> updateShipping({
+  Future<TransactionModel> updateBuyerShipping({
     required int id,
     required String buyerFullName,
     required String shippingAddress,
     required String buyerPhoneNumber,
   }) async {
     final response = await _apiClient.post(
-      '${ApiRoutes.transactionDetail(id)}shipping/',
+      ApiRoutes.transactionBuyerShipping(id),
       body: {
         'buyer_full_name': buyerFullName,
         'shipping_address': shippingAddress,

@@ -12,8 +12,11 @@ class ProductService {
   static final ProductService instance = ProductService._internal();
   final ApiClient _apiClient = ApiClient();
 
-  Future<List<Product>> fetchProducts() async {
-    final response = await _apiClient.get(ApiRoutes.marketplaceProducts);
+  Future<List<Product>> fetchProducts({int? storeId}) async {
+    final response = await _apiClient.get(
+      ApiRoutes.marketplaceProducts,
+      query: storeId == null ? null : {'store_id': storeId.toString()},
+    );
 
     if (response.statusCode != 200) {
       throw ProductServiceException(

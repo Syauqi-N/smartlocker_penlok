@@ -32,17 +32,43 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
+                  if (product.storeName.isNotEmpty) ...[
+                    Text(
+                      product.storeName,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.grey,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    if (product.storeLocation != null &&
+                        product.storeLocation!.isNotEmpty)
+                      Text(
+                        product.storeLocation!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.grey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    const SizedBox(height: 4),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'IDR ${product.price.toStringAsFixed(0)}',
-                        style: const TextStyle(color: AppColors.secondary, fontSize: 14),
+                        style: const TextStyle(
+                            color: AppColors.secondary, fontSize: 14),
                       ),
                       IconButton(
                         icon: const Icon(Icons.add_shopping_cart),
@@ -84,7 +110,8 @@ class _ProductImage extends StatelessWidget {
     return Image.network(
       imageUrl!,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Image.asset('assets/images/placeholder.png', fit: BoxFit.cover),
+      errorBuilder: (_, __, ___) =>
+          Image.asset('assets/images/placeholder.png', fit: BoxFit.cover),
     );
   }
 }

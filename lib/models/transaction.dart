@@ -2,6 +2,7 @@ import 'package:smartlocker/config/env.dart';
 
 enum TransactionStatus {
   pending,
+  needVerification,
   escrow,
   paid,
   awaitingPickup,
@@ -13,6 +14,8 @@ enum TransactionStatus {
 
 TransactionStatus transactionStatusFromString(String? value) {
   switch (value) {
+    case 'NEED_VERIFICATION':
+      return TransactionStatus.needVerification;
     case 'ESCROW':
       return TransactionStatus.escrow;
     case 'PAID':

@@ -8,6 +8,10 @@ class Product {
     required this.stock,
     required this.description,
     required this.storeId,
+    this.storeName = '',
+    this.storeOwnerName = '',
+    this.storeLocation,
+    this.storeDescription,
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
@@ -19,6 +23,10 @@ class Product {
   final int stock;
   final String description;
   final int storeId;
+  final String storeName;
+  final String storeOwnerName;
+  final String? storeLocation;
+  final String? storeDescription;
   final String? imageUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -34,6 +42,20 @@ class Product {
       stock: _parseInt(json['stock']),
       description: json['description']?.toString() ?? '',
       storeId: _parseInt(json['store']),
+      storeName:
+          (json['store_info'] as Map<String, dynamic>?)?['name']?.toString() ??
+              '',
+      storeOwnerName: (json['store_info'] as Map<String, dynamic>?)?['owner']
+                  ?['username']
+              ?.toString() ??
+          (json['store_info'] as Map<String, dynamic>?)?['owner']?['email']
+              ?.toString() ??
+          '',
+      storeLocation: (json['store_info'] as Map<String, dynamic>?)?['location']
+          ?.toString(),
+      storeDescription:
+          (json['store_info'] as Map<String, dynamic>?)?['description']
+              ?.toString(),
       imageUrl: _resolveImageUrl(json['image_url'] ?? json['image']),
       createdAt: parseDate(json['created_at']?.toString()),
       updatedAt: parseDate(json['updated_at']?.toString()),
@@ -48,6 +70,10 @@ class Product {
       'stock': stock,
       'description': description,
       'store': storeId,
+      'store_name': storeName,
+      'store_owner_name': storeOwnerName,
+      if (storeLocation != null) 'store_location': storeLocation,
+      if (storeDescription != null) 'store_description': storeDescription,
       if (imageUrl != null) 'image_url': imageUrl,
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
@@ -61,6 +87,10 @@ class Product {
     int? stock,
     String? description,
     int? storeId,
+    String? storeName,
+    String? storeOwnerName,
+    String? storeLocation,
+    String? storeDescription,
     String? imageUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -72,6 +102,10 @@ class Product {
       stock: stock ?? this.stock,
       description: description ?? this.description,
       storeId: storeId ?? this.storeId,
+      storeName: storeName ?? this.storeName,
+      storeOwnerName: storeOwnerName ?? this.storeOwnerName,
+      storeLocation: storeLocation ?? this.storeLocation,
+      storeDescription: storeDescription ?? this.storeDescription,
       imageUrl: imageUrl ?? this.imageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

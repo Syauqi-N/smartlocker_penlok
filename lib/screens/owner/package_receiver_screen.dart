@@ -147,6 +147,10 @@ class _PackageReceiverScreenState extends State<PackageReceiverScreen>
                     items: const [
                       DropdownMenuItem(
                           value: 'locker-1', child: Text('Locker 1')),
+                      DropdownMenuItem(
+                          value: 'locker-2', child: Text('Locker 2')),
+                      DropdownMenuItem(
+                          value: 'locker-3', child: Text('Locker 3')),
                     ],
                     onChanged: (value) {
                       if (value == null || value == _selectedLockerId) return;

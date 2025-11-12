@@ -67,6 +67,7 @@ class _PaymentVerificationMainScreenState
       await _transactionService.approveTransaction(transaction.id);
       if (!mounted) return;
       await _loadTransactions();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Payment approved. Transaction moved to escrow.')),
@@ -90,6 +91,7 @@ class _PaymentVerificationMainScreenState
       await _transactionService.rejectTransaction(transaction.id);
       if (!mounted) return;
       await _loadTransactions();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Payment rejected.')),
       );
@@ -112,6 +114,7 @@ class _PaymentVerificationMainScreenState
       await _transactionService.generateOtp(transaction.id);
       if (!mounted) return;
       await _loadTransactions();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('OTP generated and sent to buyer.')),
       );
@@ -190,7 +193,9 @@ class _PaymentVerificationMainScreenState
 
   Widget _buildNeedVerification() {
     final pending = _transactions
-        .where((t) => t.status == TransactionStatus.pending)
+        .where((t) =>
+            t.status == TransactionStatus.needVerification ||
+            t.status == TransactionStatus.pending)
         .toList();
 
     if (pending.isEmpty) {

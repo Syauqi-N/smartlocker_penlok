@@ -4,6 +4,7 @@ import 'package:smartlocker/screens/buyer/buyer_dashboard_screen.dart';
 import 'package:smartlocker/screens/buyer/buyer_notifications_screen.dart';
 import 'package:smartlocker/screens/buyer/buyer_otp_list_screen.dart';
 import 'package:smartlocker/screens/buyer/cart_screen.dart';
+import 'package:smartlocker/screens/profile/account_center_screen.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 import 'package:smartlocker/services/auth_service.dart';
 
@@ -48,6 +49,14 @@ class BuyerDrawer extends StatelessWidget {
             icon: Icons.lock,
             text: 'My OTPs',
             onTap: () => _navigateTo(context, const BuyerOtpListScreen()),
+          ),
+          _buildDrawerItem(
+            icon: Icons.person,
+            text: 'Account Center',
+            onTap: () => _navigateTo(
+              context,
+              AccountCenterScreen(drawer: const BuyerDrawer()),
+            ),
           ),
           const Divider(),
           _buildDrawerItem(

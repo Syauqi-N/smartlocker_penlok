@@ -30,9 +30,10 @@ class OwnerLockerService {
       );
     }
 
+    final lockerLabel = lockerId.toUpperCase().replaceAll('LOCKER-', 'Locker ');
     return LockerActionResult(
       success: true,
-      message: 'Locker berhasil dibuka secara manual.',
+      message: '$lockerLabel siap dibuka.',
     );
   }
 }

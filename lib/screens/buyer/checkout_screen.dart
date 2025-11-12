@@ -196,7 +196,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
 
     try {
-      final updated = await _transactionService.updateShipping(
+      final updated = await _transactionService.updateBuyerShipping(
         id: _transaction!.id,
         buyerFullName: _nameController.text.trim(),
         shippingAddress: _addressController.text.trim(),
@@ -220,14 +220,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('OK'),
             ),
           ],
         ),
       );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
       setState(() {

@@ -96,15 +96,14 @@ class _PackageHistoryScreenState extends State<PackageHistoryScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: ExpansionTile(
             title: Text(package.packageName),
-            subtitle: Text('Resi: ${package.trackingNumber ?? '-'}'),
+            subtitle: Text('Resi: ${package.trackingNumber}'),
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow(
-                        'Tracking Number', package.trackingNumber ?? '-'),
+                    _buildDetailRow('Tracking Number', package.trackingNumber),
                     const SizedBox(height: 8),
                     _buildDetailRow('Package Name', package.packageName),
                     if (package.courier != null &&
@@ -120,8 +119,15 @@ class _PackageHistoryScreenState extends State<PackageHistoryScreen> {
                       ),
                     ],
                     const SizedBox(height: 8),
-                    _buildDetailRow(
-                        'Status', package.status.toString().split('.').last),
+                    _buildDetailRow('Status', package.status.label),
+                    if (package.lockerSlot?.isNotEmpty == true) ...[
+                      const SizedBox(height: 8),
+                      _buildDetailRow('Locker', package.lockerSlot!),
+                    ],
+                    if (package.receiverName?.isNotEmpty == true) ...[
+                      const SizedBox(height: 8),
+                      _buildDetailRow('Receiver', package.receiverName!),
+                    ],
                   ],
                 ),
               ),

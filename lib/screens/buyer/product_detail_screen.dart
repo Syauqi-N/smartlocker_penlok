@@ -42,6 +42,19 @@ class ProductDetailScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
+                  if (product.storeName.isNotEmpty) ...[
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.store, color: AppColors.grey),
+                      title: Text(product.storeName),
+                      subtitle: Text(
+                        product.storeLocation?.isNotEmpty == true
+                            ? product.storeLocation!
+                            : 'Seller: ${product.storeOwnerName.isNotEmpty ? product.storeOwnerName : 'SmartLocker Seller'}',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     children: [
                       Chip(

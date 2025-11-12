@@ -1,196 +1,173 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
-import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/screens/owner/package_input_screen.dart';
+import 'package:smartlocker/services/package_service.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
-class PackageDetailScreen extends StatelessWidget {
+class PackageDetailScreen extends StatefulWidget {
+  const PackageDetailScreen({super.key, required this.package});
+
   final Package package;
 
-  const PackageDetailScreen({super.key, required this.package});
+  @override
+  State<PackageDetailScreen> createState() => _PackageDetailScreenState();
+}
+
+class _PackageDetailScreenState extends State<PackageDetailScreen> {
+  final PackageService _packageService = PackageService.instance;
+  late Package _package;
+  bool _statusUpdating = false;
+  bool _deleting = false;
+  bool _hasChanges = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _package = widget.package;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Package Details'),
-      ),
-      drawer: const ReceiverDrawer(),
-      body: SingleChildScrollView(
-        child: Padding(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        Navigator.pop(context, _hasChanges);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Package Details'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Edit',
+              onPressed: _statusUpdating || _deleting ? null : _editPackage,
+            ),
+            IconButton(
+              icon: _deleting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.delete),
+              tooltip: 'Delete',
+              onPressed: _deleting ? null : _confirmDelete,
+            ),
+          ],
+        ),
+        drawer: const ReceiverDrawer(),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Package Header
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        _package.packageName,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(
-                              package.packageName,
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
+                          const Text(
+                            'Status:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(package.status),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              package.status
-                                  .toString()
-                                  .split('.')
-                                  .last
-                                  .toUpperCase(),
-                              style: const TextStyle(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.bold),
-                            ),
+                          const SizedBox(width: 12),
+                          DropdownButton<PackageStatus>(
+                            value: _package.status,
+                            items: PackageStatus.values
+                                .map(
+                                  (status) => DropdownMenuItem(
+                                    value: status,
+                                    child: Text(status.label),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: _statusUpdating ? null : _changeStatus,
                           ),
+                          if (_statusUpdating)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildDetailRow('Tracking Number',
-                          package.trackingNumber ?? '-'),
+                      _buildDetailRow(
+                          'Tracking Number', _package.trackingNumber),
                       const SizedBox(height: 8),
-                      if (package.courier != null)
-                        _buildDetailRow('Courier', package.courier!),
+                      _buildDetailRow(
+                        'Courier',
+                        _package.courier?.isNotEmpty == true
+                            ? _package.courier!
+                            : '-',
+                      ),
                       const SizedBox(height: 8),
-                      if (package.orderDate != null)
-                        _buildDetailRow(
-                            'Order Date', _formatDate(package.orderDate!)),
+                      _buildDetailRow(
+                        'Order Date',
+                        _package.orderDate != null
+                            ? _formatDate(_package.orderDate!)
+                            : '-',
+                      ),
                       const SizedBox(height: 8),
-                      if (package.buyerPhoneNumber != null &&
-                          package.buyerPhoneNumber!.isNotEmpty)
-                        _buildDetailRow(
-                            'Receiver Phone', package.buyerPhoneNumber!),
-                      if (package.shippingAddress != null &&
-                          package.shippingAddress!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        _buildDetailRow(
-                            'Delivery Address', package.shippingAddress!),
+                      _buildDetailRow(
+                        'Delivered Date',
+                        _package.deliveredDate != null
+                            ? _formatDate(_package.deliveredDate!)
+                            : '-',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDetailRow(
+                        'Locker Slot',
+                        _package.lockerSlot?.isNotEmpty == true
+                            ? _package.lockerSlot!
+                            : '-',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDetailRow(
+                        'Receiver',
+                        _package.receiverName?.isNotEmpty == true
+                            ? _package.receiverName!
+                            : '-',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDetailRow(
+                        'Receiver Phone',
+                        _package.receiverPhone?.isNotEmpty == true
+                            ? _package.receiverPhone!
+                            : '-',
+                      ),
+                      if (_package.notes?.isNotEmpty == true) ...[
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Notes',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_package.notes!),
                       ],
-                      const SizedBox(height: 8),
-                      if (package.deliveredDate != null)
-                        _buildDetailRow('Delivered Date',
-                            _formatDate(package.deliveredDate!)),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Tracking History Title
-              const Text(
-                'Tracking History',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Tracking History List
-              if (package.trackingHistory.isEmpty)
-                const Center(
-                  child: Text('No tracking history available'),
-                )
-              else
-                ..._buildTrackingTimeline(package.trackingHistory),
             ],
           ),
         ),
       ),
     );
-  }
-
-  List<Widget> _buildTrackingTimeline(List<PackageTrackingEvent> events) {
-    // Sort events by timestamp (newest first)
-    final sortedEvents = List<PackageTrackingEvent>.from(events)
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
-    List<Widget> timeline = [];
-
-    for (int i = 0; i < sortedEvents.length; i++) {
-      final event = sortedEvents[i];
-
-      timeline.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Timeline indicator
-            Column(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                if (i < sortedEvents.length - 1)
-                  Container(
-                    width: 2,
-                    height: 50,
-                    color: AppColors.primary,
-                  ),
-              ],
-            ),
-            const SizedBox(width: 16),
-
-            // Event details
-            Expanded(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.description,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        event.location,
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            event.status,
-                            style: TextStyle(
-                              color: _getStatusEventColor(event.status),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            _formatDateTime(event.timestamp),
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return timeline;
   }
 
   Widget _buildDetailRow(String label, String value) {
@@ -209,39 +186,94 @@ class PackageDetailScreen extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(PackageStatus status) {
-    switch (status) {
-      case PackageStatus.inTransit:
-        return Colors.orange;
-      case PackageStatus.delivered:
-        return Colors.blue;
-      case PackageStatus.completed:
-        return Colors.green;
-      case PackageStatus.failed:
-        return Colors.red;
-    }
-  }
-
-  Color _getStatusEventColor(String status) {
-    if (status.toLowerCase().contains('received')) {
-      return Colors.orange;
-    } else if (status.toLowerCase().contains('transit')) {
-      return Colors.blue;
-    } else if (status.toLowerCase().contains('delivery')) {
-      return Colors.purple;
-    } else if (status.toLowerCase().contains('delivered')) {
-      return Colors.green;
-    } else if (status.toLowerCase().contains('completed')) {
-      return Colors.green;
-    }
-    return AppColors.grey;
-  }
-
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  Future<void> _changeStatus(PackageStatus? status) async {
+    if (status == null || status == _package.status) return;
+    setState(() => _statusUpdating = true);
+    try {
+      final updated = await _packageService.updatePackage(
+        id: _package.id,
+        status: status,
+      );
+      if (!mounted) return;
+      setState(() {
+        _package = updated;
+        _statusUpdating = false;
+        _hasChanges = true;
+      });
+      _showMessage('Status updated to ${status.label}.');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _statusUpdating = false);
+      _showMessage('Failed to update status: $error', isError: true);
+    }
+  }
+
+  Future<void> _editPackage() async {
+    final updated = await Navigator.push<Package>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageInputScreen(package: _package),
+      ),
+    );
+    if (updated != null && mounted) {
+      setState(() {
+        _package = updated;
+        _hasChanges = true;
+      });
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Package'),
+        content: const Text(
+          'This action cannot be undone. Are you sure you want to delete this package?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      _deletePackage();
+    }
+  }
+
+  Future<void> _deletePackage() async {
+    setState(() => _deleting = true);
+    try {
+      await _packageService.deletePackage(_package.id);
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _deleting = false);
+      _showMessage('Failed to delete package: $error', isError: true);
+    }
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 }

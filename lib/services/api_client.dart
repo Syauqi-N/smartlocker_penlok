@@ -18,8 +18,13 @@ class ApiClient {
       return parsed.replace(queryParameters: mergedQuery.isEmpty ? null : mergedQuery);
     }
 
+    final cleanBase = Env.apiBaseUrl.trim().replaceFirst(RegExp(r'/+$'), '');
+    final effectiveBase = cleanBase.isEmpty ? Env.apiBaseUrl.trim() : cleanBase;
+    if (effectiveBase.isEmpty) {
+      throw StateError('API base URL is not configured.');
+    }
     final cleanPath = path.startsWith('/') ? path : '/$path';
-    return Uri.parse('${Env.apiBaseUrl}$cleanPath')
+    return Uri.parse('$effectiveBase$cleanPath')
         .replace(queryParameters: queryParameters);
   }
 

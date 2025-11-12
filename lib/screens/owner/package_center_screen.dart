@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
 import 'package:smartlocker/screens/owner/package_detail_screen.dart';
-import 'package:smartlocker/services/package_service.dart';
 import 'package:smartlocker/screens/owner/package_input_screen.dart';
+import 'package:smartlocker/services/package_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
@@ -18,7 +18,7 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
   final PackageService _packageService = PackageService.instance;
   late TabController _tabController;
   final List<Package> _activePackages = [];
-  final List<Package> _completedPackages = [];
+  final List<Package> _deliveredPackages = [];
   bool _loading = false;
   String? _error;
 
@@ -44,19 +44,19 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
       final packages = await _packageService.fetchPackages();
       final active = packages
           .where((p) =>
-              p.status == PackageStatus.inTransit ||
-              p.status == PackageStatus.delivered)
+              p.status == PackageStatus.registered ||
+              p.status == PackageStatus.inTransit)
           .toList();
-      final completed =
-          packages.where((p) => p.status == PackageStatus.completed).toList();
+      final delivered =
+          packages.where((p) => p.status == PackageStatus.delivered).toList();
       if (!mounted) return;
       setState(() {
         _activePackages
           ..clear()
           ..addAll(active);
-        _completedPackages
+        _deliveredPackages
           ..clear()
-          ..addAll(completed);
+          ..addAll(delivered);
         _loading = false;
       });
     } catch (error) {
@@ -77,20 +77,20 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
           controller: _tabController,
           tabs: const [
             Tab(text: 'Active'),
-            Tab(text: 'Completed'),
+            Tab(text: 'Delivered'),
           ],
         ),
       ),
       drawer: const ReceiverDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final created = await Navigator.push<bool>(
+          final created = await Navigator.push<dynamic>(
             context,
             MaterialPageRoute(
               builder: (context) => const PackageInputScreen(),
             ),
           );
-          if (created == true) {
+          if (created != null) {
             _loadPackages();
           }
         },
@@ -108,10 +108,10 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
                     controller: _tabController,
                     children: [
                       _buildPackageList(_activePackages),
-                      _buildPackageList(_completedPackages),
+                      _buildPackageList(_deliveredPackages),
                     ],
                   ),
-      ),
+                ),
     );
   }
 
@@ -130,32 +130,38 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Resi: ${package.trackingNumber ?? '-'}'),
+                Text('Resi: ${package.trackingNumber}'),
                 if (package.courier != null && package.courier!.isNotEmpty)
                   Text('Courier: ${package.courier}'),
                 if (package.orderDate != null)
                   Text(
                       'Order Date: ${package.orderDate!.day}/${package.orderDate!.month}/${package.orderDate!.year}'),
+                if (package.receiverName?.isNotEmpty == true)
+                  Text('Receiver: ${package.receiverName}'),
+                if (package.lockerSlot?.isNotEmpty == true)
+                  Text('Locker: ${package.lockerSlot}'),
               ],
             ),
             trailing: Text(
-              package.status.toString().split('.').last,
+              package.status.label,
               style: TextStyle(
                 color: switch (package.status) {
+                  PackageStatus.registered => Colors.grey,
                   PackageStatus.inTransit => Colors.orange,
-                  PackageStatus.delivered => Colors.blue,
-                  PackageStatus.completed => Colors.green,
-                  PackageStatus.failed => Colors.red,
+                  PackageStatus.delivered => Colors.green,
                 },
               ),
             ),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final changed = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PackageDetailScreen(package: package),
                 ),
               );
+              if (changed == true) {
+                _loadPackages();
+              }
             },
           ),
         );

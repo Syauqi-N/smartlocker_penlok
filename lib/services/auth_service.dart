@@ -116,10 +116,12 @@ class AuthService {
   String? _extractErrorMessage(String body) {
     try {
       final decoded = jsonDecode(body);
-      if (decoded is Map && decoded['detail'] != null)
+      if (decoded is Map && decoded['detail'] != null) {
         return decoded['detail'].toString();
-      if (decoded is Map && decoded['error'] != null)
+      }
+      if (decoded is Map && decoded['error'] != null) {
         return decoded['error'].toString();
+      }
       return decoded.toString();
     } catch (_) {
       return null;

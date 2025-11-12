@@ -5,6 +5,7 @@ import 'package:smartlocker/screens/owner/owner_notifications_screen.dart';
 import 'package:smartlocker/screens/owner/payment_verification_main_screen.dart';
 import 'package:smartlocker/screens/owner/product_management_screen.dart';
 import 'package:smartlocker/screens/owner/sales_history_screen.dart';
+import 'package:smartlocker/screens/profile/account_center_screen.dart';
 import 'package:smartlocker/services/auth_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
@@ -54,6 +55,14 @@ class SellerDrawer extends StatelessWidget {
             icon: Icons.notifications,
             text: 'Order Notifications',
             onTap: () => _navigateTo(context, const OwnerNotificationsScreen()),
+          ),
+          _buildDrawerItem(
+            icon: Icons.person,
+            text: 'Account Center',
+            onTap: () => _navigateTo(
+              context,
+              AccountCenterScreen(drawer: const SellerDrawer()),
+            ),
           ),
           const Divider(),
           _buildDrawerItem(

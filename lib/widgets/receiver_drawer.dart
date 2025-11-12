@@ -5,6 +5,8 @@ import 'package:smartlocker/screens/owner/package_receiver_screen.dart';
 import 'package:smartlocker/screens/owner/package_notifications_screen.dart';
 import 'package:smartlocker/screens/owner/package_history_screen.dart';
 import 'package:smartlocker/screens/owner/receiver_dashboard_screen.dart';
+import 'package:smartlocker/screens/profile/account_center_screen.dart';
+import 'package:smartlocker/services/auth_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
 
 class ReceiverDrawer extends StatelessWidget {
@@ -55,11 +57,20 @@ class ReceiverDrawer extends StatelessWidget {
             text: 'Package History',
             onTap: () => _navigateTo(context, const PackageHistoryScreen()),
           ),
+          _buildDrawerItem(
+            icon: Icons.person,
+            text: 'Account Center',
+            onTap: () => _navigateTo(
+              context,
+              AccountCenterScreen(drawer: const ReceiverDrawer()),
+            ),
+          ),
           const Divider(),
           _buildDrawerItem(
             icon: Icons.logout,
             text: 'Logout',
             onTap: () {
+              AuthService.instance.logout();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const LandingScreen()),

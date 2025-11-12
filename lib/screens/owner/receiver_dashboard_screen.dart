@@ -15,7 +15,7 @@ class ReceiverDashboardScreen extends StatefulWidget {
 class _ReceiverDashboardScreenState extends State<ReceiverDashboardScreen> {
   final PackageService _packageService = PackageService.instance;
   final List<Package> _activePackages = [];
-  final List<Package> _completedPackages = [];
+  final List<Package> _deliveredPackages = [];
   bool _loading = false;
   String? _error;
 
@@ -34,19 +34,19 @@ class _ReceiverDashboardScreenState extends State<ReceiverDashboardScreen> {
       final packages = await _packageService.fetchPackages();
       final active = packages
           .where((p) =>
-              p.status == PackageStatus.inTransit ||
-              p.status == PackageStatus.delivered)
+              p.status == PackageStatus.registered ||
+              p.status == PackageStatus.inTransit)
           .toList();
-      final completed =
-          packages.where((p) => p.status == PackageStatus.completed).toList();
+      final delivered =
+          packages.where((p) => p.status == PackageStatus.delivered).toList();
       if (!mounted) return;
       setState(() {
         _activePackages
           ..clear()
           ..addAll(active);
-        _completedPackages
+        _deliveredPackages
           ..clear()
-          ..addAll(completed);
+          ..addAll(delivered);
         _loading = false;
       });
     } catch (error) {
@@ -90,8 +90,8 @@ class _ReceiverDashboardScreenState extends State<ReceiverDashboardScreen> {
                         _buildStatCard('Active Packages',
                             _activePackages.length.toString(), Colors.blue),
                         const SizedBox(height: 16),
-                        _buildStatCard('Completed Packages',
-                            _completedPackages.length.toString(), Colors.green),
+                        _buildStatCard('Delivered Packages',
+                            _deliveredPackages.length.toString(), Colors.green),
                         const SizedBox(height: 32),
                         const Text(
                           'Recent Packages',
@@ -101,7 +101,7 @@ class _ReceiverDashboardScreenState extends State<ReceiverDashboardScreen> {
                         const SizedBox(height: 16),
                         Expanded(
                           child: _buildRecentPackagesList(
-                              _activePackages, _completedPackages),
+                              _activePackages, _deliveredPackages),
                         ),
                       ],
                     ),
@@ -135,9 +135,8 @@ class _ReceiverDashboardScreenState extends State<ReceiverDashboardScreen> {
   }
 
   Widget _buildRecentPackagesList(
-      List<Package> activePackages, List<Package> completedPackages) {
-    // Combine and sort packages by ID (as a simple way to show recent ones)
-    final allPackages = [...activePackages, ...completedPackages];
+      List<Package> activePackages, List<Package> deliveredPackages) {
+    final allPackages = [...activePackages, ...deliveredPackages];
     if (allPackages.isEmpty) {
       return const Center(
         child: Text('No packages found.'),
@@ -155,25 +154,25 @@ class _ReceiverDashboardScreenState extends State<ReceiverDashboardScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Resi: ${package.trackingNumber ?? '-'}'),
-                Text('Status: ${package.status.toString().split('.').last}'),
+                Text('Resi: ${package.trackingNumber}'),
+                Text('Status: ${package.status.label}'),
+                if (package.receiverName?.isNotEmpty == true)
+                  Text('Receiver: ${package.receiverName}'),
+                if (package.lockerSlot?.isNotEmpty == true)
+                  Text('Locker: ${package.lockerSlot}'),
               ],
             ),
             trailing: Icon(
-              package.status == PackageStatus.inTransit
-                  ? Icons.local_shipping
-                  : package.status == PackageStatus.delivered
-                      ? Icons.inventory
-                      : package.status == PackageStatus.completed
-                          ? Icons.check_circle
-                          : Icons.error_outline,
-              color: package.status == PackageStatus.inTransit
-                  ? Colors.orange
-                  : package.status == PackageStatus.delivered
-                      ? Colors.blue
-                      : package.status == PackageStatus.completed
-                          ? Colors.green
-                          : Colors.red,
+              switch (package.status) {
+                PackageStatus.registered => Icons.pending,
+                PackageStatus.inTransit => Icons.local_shipping,
+                PackageStatus.delivered => Icons.inventory,
+              },
+              color: switch (package.status) {
+                PackageStatus.registered => Colors.grey,
+                PackageStatus.inTransit => Colors.orange,
+                PackageStatus.delivered => Colors.green,
+              },
             ),
             onTap: () {
               Navigator.push(

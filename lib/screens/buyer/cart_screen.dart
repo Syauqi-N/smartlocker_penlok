@@ -119,11 +119,20 @@ class _CartScreenState extends State<CartScreen> {
             ],
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              if (_cartService.items.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Your cart is empty.')),
+                );
+                return;
+              }
+              final cleared = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(builder: (context) => const CheckoutScreen()),
               );
+              if (cleared == true && mounted) {
+                _updateCart();
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.secondary,
