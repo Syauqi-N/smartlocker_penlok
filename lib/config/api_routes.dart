@@ -13,6 +13,8 @@ class ApiRoutes {
 
   static String get usersLogin => '$_base/users/login/';
   static String get usersRegister => '$_base/users/register/';
+  static String get usersRegisterBuyer => '$_base/users/register/buyer/';
+  static String get usersRegisterOwner => '$_base/users/register/owner/';
   static String get usersRefresh => '$_base/users/login/refresh/';
   static String get usersProfile => '$_base/users/profile/';
   static String get notifications => '$_base/notifications/';

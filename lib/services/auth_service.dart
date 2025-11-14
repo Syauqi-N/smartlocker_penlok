@@ -50,13 +50,18 @@ class AuthService {
     required String password,
     required UserRole role,
   }) async {
+    final endpoint = role == UserRole.owner
+        ? ApiRoutes.usersRegisterOwner
+        : ApiRoutes.usersRegisterBuyer;
+
     final res = await http.post(
-      Uri.parse(ApiRoutes.usersRegister),
+      Uri.parse(endpoint),
       headers: const {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
         'email': email,
         'password': password,
+        // keep sending role for backward compatibility with legacy endpoint.
         'role': role == UserRole.owner ? 'OWNER' : 'BUYER',
       }),
     );
