@@ -4,6 +4,7 @@ import 'package:smartlocker/models/store.dart';
 import 'package:smartlocker/screens/buyer/product_detail_screen.dart';
 import 'package:smartlocker/services/product_service.dart';
 import 'package:smartlocker/services/store_service.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/buyer_drawer.dart';
 import 'package:smartlocker/widgets/product_card.dart';
 
@@ -40,7 +41,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     });
     try {
       final products =
-          await _productService.fetchProducts(storeId: _selectedStoreId);
+          await _productService.listPublicProducts(storeId: _selectedStoreId);
       if (mounted) {
         setState(() => _products = products);
       }
@@ -80,7 +81,13 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Store'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Store'),
+          ],
+        ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
           IconButton(onPressed: () {}, icon: const Icon(Icons.filter_list)),
@@ -107,6 +114,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                const AppLogoHeader(child: SizedBox.shrink()),
                 _buildStoreFilter(),
                 const SizedBox(height: 12),
                 if (_products.isEmpty)

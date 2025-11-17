@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/transaction.dart';
 import 'package:smartlocker/services/transaction_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/seller_drawer.dart';
 import 'package:smartlocker/widgets/placeholder_chart.dart';
 
@@ -63,7 +64,13 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Dashboard'),
+          ],
+        ),
       ),
       drawer: const SellerDrawer(),
       body: _loading && _transactions.isEmpty

@@ -49,20 +49,19 @@ class AuthService {
     required String email,
     required String password,
     required UserRole role,
+    String? firstName,
+    String? lastName,
   }) async {
-    final endpoint = role == UserRole.owner
-        ? ApiRoutes.usersRegisterOwner
-        : ApiRoutes.usersRegisterBuyer;
-
     final res = await http.post(
-      Uri.parse(endpoint),
+      Uri.parse(ApiRoutes.usersRegister),
       headers: const {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
         'email': email,
         'password': password,
-        // keep sending role for backward compatibility with legacy endpoint.
         'role': role == UserRole.owner ? 'OWNER' : 'BUYER',
+        if (role == UserRole.owner) 'first_name': firstName ?? '',
+        if (role == UserRole.owner) 'last_name': lastName ?? '',
       }),
     );
 

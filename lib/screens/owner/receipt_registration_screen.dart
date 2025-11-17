@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class ReceiptRegistrationScreen extends StatelessWidget {
@@ -9,7 +10,13 @@ class ReceiptRegistrationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Receipt Registration'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Receipt Registration'),
+          ],
+        ),
       ),
       drawer: const ReceiverDrawer(),
       body: SingleChildScrollView(

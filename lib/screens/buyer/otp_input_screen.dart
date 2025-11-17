@@ -3,6 +3,7 @@ import 'package:smartlocker/config/api_routes.dart';
 import 'package:smartlocker/models/transaction.dart';
 import 'package:smartlocker/services/api_client.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/buyer_drawer.dart';
 
 class OtpInputScreen extends StatefulWidget {
@@ -56,7 +57,13 @@ class _OtpInputScreenState extends State<OtpInputScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Enter OTP'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Enter OTP'),
+          ],
+        ),
       ),
       drawer: const BuyerDrawer(),
       body: Padding(

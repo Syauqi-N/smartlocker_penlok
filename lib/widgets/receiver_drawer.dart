@@ -20,7 +20,7 @@ class ReceiverDrawer extends StatelessWidget {
         children: [
           const DrawerHeader(
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: AppColors.header,
             ),
             child: Text(
               'Receiver Menu',

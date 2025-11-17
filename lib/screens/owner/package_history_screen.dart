@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
 import 'package:smartlocker/services/package_service.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageHistoryScreen extends StatefulWidget {
@@ -49,7 +50,13 @@ class _PackageHistoryScreenState extends State<PackageHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Package History'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Package History'),
+          ],
+        ),
       ),
       drawer: const ReceiverDrawer(),
       body: RefreshIndicator(

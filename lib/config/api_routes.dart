@@ -21,6 +21,7 @@ class ApiRoutes {
   static String get lockersLogs => '$_base/lockers/logs/';
   static String get lockersValidateOtp => '$_base/lockers/otp/validate/';
   static String get marketplaceProducts => '$_base/marketplace/products/';
+  static String get marketplaceMyProducts => '$_base/marketplace/my-products/';
   static String get marketplaceStores => '$_base/marketplace/stores/';
   static String get marketplaceTransactions =>
       '$_base/marketplace/transactions/';

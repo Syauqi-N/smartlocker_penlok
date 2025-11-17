@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/app_notification.dart';
 import 'package:smartlocker/services/notification_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/buyer_drawer.dart';
 
 class BuyerNotificationsScreen extends StatefulWidget {
@@ -67,7 +68,13 @@ class _BuyerNotificationsScreenState extends State<BuyerNotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Notifications'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('My Notifications'),
+          ],
+        ),
       ),
       drawer: const BuyerDrawer(),
       body: RefreshIndicator(

@@ -3,6 +3,7 @@ import 'package:smartlocker/screens/buyer/buyer_dashboard_screen.dart';
 import 'package:smartlocker/screens/owner/owner_role_selection_screen.dart';
 import 'package:smartlocker/services/auth_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 
 enum UserType { owner, buyer }
 
@@ -29,6 +30,8 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
   final _registerEmailController = TextEditingController();
   final _registerPasswordController = TextEditingController();
   final _registerConfirmPasswordController = TextEditingController();
+  final _registerFirstNameController = TextEditingController();
+  final _registerLastNameController = TextEditingController();
 
   bool _loginLoading = false;
   bool _registerLoading = false;
@@ -48,6 +51,8 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
     _registerEmailController.dispose();
     _registerPasswordController.dispose();
     _registerConfirmPasswordController.dispose();
+    _registerFirstNameController.dispose();
+    _registerLastNameController.dispose();
     super.dispose();
   }
 
@@ -55,14 +60,14 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.header,
         elevation: 0,
         leading: const BackButton(color: AppColors.black),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.black,
-          unselectedLabelColor: AppColors.grey,
-          indicatorColor: AppColors.primary,
+          labelColor: AppColors.white,
+          unselectedLabelColor: AppColors.white70,
+          indicatorColor: AppColors.white,
           indicatorWeight: 3,
           tabs: const [
             Tab(text: 'LOGIN'),
@@ -86,7 +91,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
             emailController: _registerEmailController,
             passwordController: _registerPasswordController,
             confirmPasswordController: _registerConfirmPasswordController,
+            firstNameController: _registerFirstNameController,
+            lastNameController: _registerLastNameController,
             isLoading: _registerLoading,
+            requireOwnerDetails: widget.userType == UserType.owner,
             onSubmit: _handleRegister,
           ),
         ],
@@ -136,6 +144,12 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
         password: _registerPasswordController.text.trim(),
         role:
             widget.userType == UserType.owner ? UserRole.owner : UserRole.buyer,
+        firstName: widget.userType == UserType.owner
+            ? _registerFirstNameController.text.trim()
+            : null,
+        lastName: widget.userType == UserType.owner
+            ? _registerLastNameController.text.trim()
+            : null,
       );
       _showMessage('Registration successful. Please login.');
       _tabController.animateTo(0);
@@ -175,48 +189,56 @@ class _LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
+    return Center(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 60),
-              _FormField(
-                controller: emailController,
-                label: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                validator: _emailValidator,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const AppFullLogo(),
+            const SizedBox(height: 24),
+            Form(
+              key: formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _FormField(
+                    controller: emailController,
+                    label: 'Email',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: _emailValidator,
+                  ),
+                  const SizedBox(height: 16),
+                  _FormField(
+                    controller: passwordController,
+                    label: 'Password',
+                    obscureText: true,
+                    validator: _passwordValidator,
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : onSubmit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.header,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('LOGIN',
+                            style:
+                                TextStyle(color: AppColors.black, fontSize: 16)),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              _FormField(
-                controller: passwordController,
-                label: 'Password',
-                obscureText: true,
-                validator: _passwordValidator,
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: isLoading ? null : onSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('LOGIN',
-                        style: TextStyle(color: AppColors.black, fontSize: 16)),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -230,8 +252,11 @@ class _RegisterForm extends StatelessWidget {
     required this.emailController,
     required this.passwordController,
     required this.confirmPasswordController,
+    required this.firstNameController,
+    required this.lastNameController,
     required this.onSubmit,
     required this.isLoading,
+    required this.requireOwnerDetails,
   });
 
   final GlobalKey<FormState> formKey;
@@ -239,76 +264,101 @@ class _RegisterForm extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController confirmPasswordController;
+  final TextEditingController firstNameController;
+  final TextEditingController lastNameController;
   final VoidCallback onSubmit;
   final bool isLoading;
+  final bool requireOwnerDetails;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
+    return Center(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 20),
-              _FormField(
-                controller: usernameController,
-                label: 'Username',
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Username is required.'
-                    : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const AppFullLogo(),
+            const SizedBox(height: 24),
+            Form(
+              key: formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _FormField(
+                    controller: usernameController,
+                    label: 'Username',
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Username is required.'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  if (requireOwnerDetails) ...[
+                    _FormField(
+                      controller: firstNameController,
+                      label: 'First Name',
+                      validator: _requiredValidator,
+                    ),
+                    const SizedBox(height: 16),
+                    _FormField(
+                      controller: lastNameController,
+                      label: 'Last Name',
+                      validator: _requiredValidator,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  _FormField(
+                    controller: emailController,
+                    label: 'Email',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: _emailValidator,
+                  ),
+                  const SizedBox(height: 16),
+                  _FormField(
+                    controller: passwordController,
+                    label: 'Password',
+                    obscureText: true,
+                    validator: _passwordValidator,
+                  ),
+                  const SizedBox(height: 16),
+                  _FormField(
+                    controller: confirmPasswordController,
+                    label: 'Confirm Password',
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password.';
+                      }
+                      if (value != passwordController.text) {
+                        return 'Passwords do not match.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : onSubmit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.header,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('REGISTER',
+                            style:
+                                TextStyle(color: AppColors.black, fontSize: 16)),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              _FormField(
-                controller: emailController,
-                label: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                validator: _emailValidator,
-              ),
-              const SizedBox(height: 16),
-              _FormField(
-                controller: passwordController,
-                label: 'Password',
-                obscureText: true,
-                validator: _passwordValidator,
-              ),
-              const SizedBox(height: 16),
-              _FormField(
-                controller: confirmPasswordController,
-                label: 'Confirm Password',
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password.';
-                  }
-                  if (value != passwordController.text) {
-                    return 'Passwords do not match.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: isLoading ? null : onSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('REGISTER',
-                        style: TextStyle(color: AppColors.black, fontSize: 16)),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -370,6 +420,13 @@ String? _passwordValidator(String? value) {
   }
   if (value.trim().length < 6) {
     return 'Password must be at least 6 characters.';
+  }
+  return null;
+}
+
+String? _requiredValidator(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return 'This field is required.';
   }
   return null;
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/app_notification.dart';
 import 'package:smartlocker/services/notification_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageNotificationsScreen extends StatefulWidget {
@@ -65,7 +66,18 @@ class _PackageNotificationsScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Package Notifications'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 22),
+            SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                'Package Notifications',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
       drawer: const ReceiverDrawer(),
       body: RefreshIndicator(

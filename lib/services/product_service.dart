@@ -12,9 +12,12 @@ class ProductService {
   static final ProductService instance = ProductService._internal();
   final ApiClient _apiClient = ApiClient();
 
-  Future<List<Product>> fetchProducts({int? storeId}) async {
+  Future<List<Product>> _fetchProductList(
+    String url, {
+    int? storeId,
+  }) async {
     final response = await _apiClient.get(
-      ApiRoutes.marketplaceProducts,
+      url,
       query: storeId == null ? null : {'store_id': storeId.toString()},
     );
 
@@ -27,6 +30,24 @@ class ProductService {
     return decoded
         .map((item) => Product.fromJson(item as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<List<Product>> listPublicProducts({int? storeId}) {
+    return _fetchProductList(
+      ApiRoutes.marketplaceProducts,
+      storeId: storeId,
+    );
+  }
+
+  Future<List<Product>> listMyProducts({int? storeId}) {
+    return _fetchProductList(
+      ApiRoutes.marketplaceMyProducts,
+      storeId: storeId,
+    );
+  }
+
+  Future<List<Product>> fetchProducts({int? storeId}) {
+    return listPublicProducts(storeId: storeId);
   }
 
   Future<Product> createProduct({

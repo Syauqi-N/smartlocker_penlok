@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/access_log.dart';
 import 'package:smartlocker/services/access_log_service.dart';
 import 'package:smartlocker/services/owner_locker_service.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageReceiverScreen extends StatefulWidget {
@@ -90,7 +91,18 @@ class _PackageReceiverScreenState extends State<PackageReceiverScreen>
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Owner - Package Receiver'),
+          title: Row(
+            children: const [
+              AppTextLogo(height: 22),
+              SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Owner - Package Receiver',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
           bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.lock_open), text: 'Kontrol Manual'),

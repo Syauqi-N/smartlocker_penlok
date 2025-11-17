@@ -4,6 +4,7 @@ import 'package:smartlocker/screens/owner/add_product_screen.dart';
 import 'package:smartlocker/screens/owner/edit_product_screen.dart';
 import 'package:smartlocker/services/product_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/seller_drawer.dart';
 
 class ProductManagementScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       _error = null;
     });
     try {
-      final products = await _productService.fetchProducts();
+      final products = await _productService.listMyProducts();
       if (mounted) {
         setState(() => _products = products);
       }
@@ -110,7 +111,18 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Management'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 22),
+            SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                'Product Management',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
       drawer: const SellerDrawer(),
       body: RefreshIndicator(
@@ -141,69 +153,75 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               );
             }
 
-            return GridView.builder(
+            return Padding(
               padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.7,
-              ),
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                final product = _products[index];
-                return Card(
-                  clipBehavior: Clip.antiAlias,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: _ProductImage(imageUrl: product.imageUrl),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'IDR ${product.price.toStringAsFixed(0)}',
-                              style:
-                                  const TextStyle(color: AppColors.secondary),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 1, thickness: 1),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit,
-                                size: 20, color: AppColors.primary),
-                            onPressed: () => _navigateToEditProduct(product),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete,
-                                size: 20, color: Colors.redAccent),
-                            onPressed: () => _confirmDelete(product),
-                          ),
-                        ],
-                      )
-                    ],
+              child: AppLogoHeader(
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.7,
                   ),
-                );
-              },
+                  itemCount: _products.length,
+                  itemBuilder: (context, index) {
+                    final product = _products[index];
+                    return Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: _ProductImage(imageUrl: product.imageUrl),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'IDR ${product.price.toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                      color: AppColors.secondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit,
+                                    size: 20, color: AppColors.primary),
+                                onPressed: () => _navigateToEditProduct(product),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete,
+                                    size: 20, color: Colors.redAccent),
+                                onPressed: () => _confirmDelete(product),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
             );
           },
         ),

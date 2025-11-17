@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/transaction.dart';
 import 'package:smartlocker/services/transaction_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/seller_drawer.dart';
 
 class SalesHistoryScreen extends StatefulWidget {
@@ -48,7 +49,13 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sales History'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Sales History'),
+          ],
+        ),
       ),
       drawer: const SellerDrawer(),
       body: RefreshIndicator(

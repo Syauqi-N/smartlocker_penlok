@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/screens/buyer/checkout_screen.dart';
 import 'package:smartlocker/services/cart_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/buyer_drawer.dart';
 
 class CartScreen extends StatefulWidget {
@@ -23,7 +24,13 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Cart'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('My Cart'),
+          ],
+        ),
       ),
       drawer: const BuyerDrawer(),
       body: ListView.builder(

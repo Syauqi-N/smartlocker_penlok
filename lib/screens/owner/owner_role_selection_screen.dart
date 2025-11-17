@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/screens/owner/owner_dashboard_screen.dart';
 import 'package:smartlocker/screens/owner/package_receiver_screen.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 
 class OwnerRoleSelectionScreen extends StatelessWidget {
   const OwnerRoleSelectionScreen({super.key});
@@ -31,6 +32,9 @@ class OwnerRoleSelectionScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 16),
+            const AppFullLogo(height: 120),
+            const SizedBox(height: 24),
             const Text(
               'Welcome Owner!',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),

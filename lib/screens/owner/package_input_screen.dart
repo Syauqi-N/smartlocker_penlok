@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
 import 'package:smartlocker/services/package_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageInputScreen extends StatefulWidget {
@@ -158,7 +159,13 @@ class _PackageInputScreenState extends State<PackageInputScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit Package' : 'Add New Package'),
+        title: Row(
+          children: [
+            const AppTextLogo(height: 28),
+            const SizedBox(width: 8),
+            Text(widget.isEditing ? 'Edit Package' : 'Add New Package'),
+          ],
+        ),
       ),
       drawer: const ReceiverDrawer(),
       body: SingleChildScrollView(

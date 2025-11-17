@@ -3,6 +3,7 @@ import 'package:smartlocker/models/product.dart';
 import 'package:smartlocker/screens/buyer/checkout_screen.dart';
 import 'package:smartlocker/services/cart_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -13,7 +14,13 @@ class ProductDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Details'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Product Details'),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(

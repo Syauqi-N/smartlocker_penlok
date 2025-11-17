@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartlocker/screens/auth/login_register_screen.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -15,16 +16,8 @@ class LandingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Welcome',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.black,
-                ),
-              ),
-              const SizedBox(height: 50),
+              const AppFullLogo(height: 180),
+              const SizedBox(height: 48),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -37,7 +30,7 @@ class LandingScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: AppColors.header,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -45,7 +38,7 @@ class LandingScreen extends StatelessWidget {
                 ),
                 child: const Text(
                   'Login as Owner/Seller',
-                  style: TextStyle(fontSize: 18, color: AppColors.black),
+                  style: TextStyle(fontSize: 18, color: AppColors.white),
                 ),
               ),
               const SizedBox(height: 20),
@@ -61,7 +54,7 @@ class LandingScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
+                  backgroundColor: const Color(0xFFA17E5E), // slightly darker than header
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

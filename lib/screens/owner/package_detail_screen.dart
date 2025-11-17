@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartlocker/models/package.dart';
 import 'package:smartlocker/screens/owner/package_input_screen.dart';
 import 'package:smartlocker/services/package_service.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageDetailScreen extends StatefulWidget {
@@ -36,7 +37,13 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Package Details'),
+          title: Row(
+            children: const [
+              AppTextLogo(height: 28),
+              SizedBox(width: 8),
+              Text('Package Details'),
+            ],
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.edit),

@@ -4,6 +4,7 @@ import 'package:smartlocker/screens/owner/package_detail_screen.dart';
 import 'package:smartlocker/screens/owner/package_input_screen.dart';
 import 'package:smartlocker/services/package_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 import 'package:smartlocker/widgets/receiver_drawer.dart';
 
 class PackageCenterScreen extends StatefulWidget {
@@ -72,7 +73,13 @@ class _PackageCenterScreenState extends State<PackageCenterScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Package Center'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Package Center'),
+          ],
+        ),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

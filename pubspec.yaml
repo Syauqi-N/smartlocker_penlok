@@ -30,4 +30,6 @@ flutter:
   # Definisikan folder assets Anda di sini
   assets:
     - assets/images/
+    - assets/images/logo1.png
+    - assets/images/logo2.png
     - assets/icons/

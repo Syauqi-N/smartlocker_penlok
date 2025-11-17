@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smartlocker/models/product.dart';
 import 'package:smartlocker/services/product_service.dart';
 import 'package:smartlocker/utils/app_colors.dart';
+import 'package:smartlocker/widgets/app_logo.dart';
 
 class EditProductScreen extends StatefulWidget {
   const EditProductScreen({super.key, required this.product});
@@ -103,7 +104,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Product'),
+        title: Row(
+          children: const [
+            AppTextLogo(height: 28),
+            SizedBox(width: 8),
+            Text('Edit Product'),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

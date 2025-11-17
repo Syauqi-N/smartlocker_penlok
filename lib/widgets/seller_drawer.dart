@@ -20,7 +20,7 @@ class SellerDrawer extends StatelessWidget {
         children: [
           const DrawerHeader(
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: AppColors.header,
             ),
             child: Text(
               'Seller Menu',
